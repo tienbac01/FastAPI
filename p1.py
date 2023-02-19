@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, EmailStr
 from fastapi.encoders import jsonable_encoder
 from pprint import pprint
+from bson import ObjectId
 
 MONGODB_URL = "mongodb://localhost:27017"
 app = FastAPI()
@@ -16,6 +17,20 @@ class User(BaseModel):
     fullname: str
     password: str
     email: EmailStr
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "fullname": "Nguyen Van A",
+                "password": "****",
+                "email": "john@gmail.com",
+            }
+        }
+
+class UpdateUser(BaseModel):
+    fullname: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None
 
     class Config:
         schema_extra = {
@@ -50,4 +65,21 @@ async def users_create(user: User):
     new_user = await collection_user.find_one({"_id": add_user.inserted_id})
 
     return ResponseModel(user_helper(new_user), "User created successfully")
-@app.get("/s")
+
+@app.get("/users/{id}")
+async def get_user(id: str):
+    user = await collection_user.find_one({"_id": ObjectId(id)})
+
+    try:
+        return ResponseModel(user_helper(user) , "Query success.")
+    except:
+        return ErrorResponseModel("Invalid request",400,"Error")
+    if user:
+        return user_helper(user)
+    else:
+        return ErrorResponseModel("Empty DB", 201, "Success")
+
+@app.put("/users/{id}")
+async def user_update(id: str, req:UpdateUser):
+    data = {k: v for k , v in req.dict().items() if v is not None}
+    user = await collection_user.find_one({"_id": ObjectId(id)})

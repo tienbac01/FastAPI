@@ -1,4 +1,4 @@
-#!/home/vnlab/Desktop/pypi/.venv/bin/python3
+#!/home/vnlab/Desktop/FastAPI/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
