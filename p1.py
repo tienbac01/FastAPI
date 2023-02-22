@@ -14,7 +14,7 @@ collection_user = db.get_collection("user")
 
 
 class User(BaseModel):
-    fullname: str
+    fullname: str | None = None
     password: str
     email: EmailStr
 
@@ -72,10 +72,10 @@ async def get_user(id: str):
         return ResponseModel(user_helper(user), "Query success.")
     except:
         return ErrorResponseModel("Invalid request", 400, "Error")
-    if user:
-        return user_helper(user)
-    else:
-        return ErrorResponseModel("Empty DB", 201, "Success")
+    # if user:
+    #     return user_helper(user)
+    # else:
+    #     return ErrorResponseModel("Empty DB", 201, "Success")
 
 
 @app.put("/users/{id}")
@@ -84,15 +84,18 @@ async def user_update(id: str, req: UpdateUser):
 
     try:
         user = await collection_user.find_one({"_id": ObjectId(id)})
-
+        pprint(user)
+        pprint(user)
         if user:
             updated_user = await collection_user.update_one(
-                {"_id": ObjectId(id)}, {"$set", data}
+                {"_id": ObjectId(id)}, {"$set": data}
             )
-        if updated_user:
-            ResponseModel(
-                "Update with id {} name is formated".format(id),
-                "User update successfully",
-            )
+            pprint(updated_user)
+            if updated_user:
+                return ResponseModel(
+                    "Update with id {} name is formated".format(id),
+                    "User update successfully",
+                )
+            return ErrorResponseModel("An error occurred", 404, "Error edit data")
     except:
         return ErrorResponseModel("Invalid request", 400, "Error")
