@@ -90,12 +90,26 @@ async def user_update(id: str, req: UpdateUser):
             updated_user = await collection_user.update_one(
                 {"_id": ObjectId(id)}, {"$set": data}
             )
-            pprint(updated_user)
+
             if updated_user:
                 return ResponseModel(
                     "Update with id {} name is formated".format(id),
                     "User update successfully",
                 )
             return ErrorResponseModel("An error occurred", 404, "Error edit data")
+    except:
+        return ErrorResponseModel("Invalid request", 400, "Error")
+
+
+@app.delete("/users/{id}")
+async def delete_user(id: str):
+    try:
+        user = await collection_user.find_one({"_id": ObjectId(id)})
+        if user:
+            await collection_user.delete_one({"_id": ObjectId(id)})
+            return ResponseModel(
+                "User with id {} is deleted".format(id),
+                "User deleted successfully",
+            )
     except:
         return ErrorResponseModel("Invalid request", 400, "Error")
